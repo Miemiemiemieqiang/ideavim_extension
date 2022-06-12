@@ -33,7 +33,6 @@ jobs:
       uses: gradle/gradle-build-action@v2
       with:
         gradle-version: 7.1
-        arguments: build
 
     - name: Build Gradle
       uses: gradle/gradle-build-action@v2

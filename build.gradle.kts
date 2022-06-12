@@ -25,7 +25,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
 }
 
-group = "io.github.hadix"
+group = "io.github.Miemiemiemieqiang"
 
 repositories {
     mavenCentral()
@@ -35,11 +35,16 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            setUrl("https://maven.pkg.github.com/Miemiemiemieqiang/ideavim_extension")
+            url = uri("https://maven.pkg.github.com/Miemiemiemieqiang/ideavim_extension")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
             }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
+            from(components["java"])
         }
     }
 }

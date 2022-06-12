@@ -4,6 +4,7 @@ plugins {
     id("java")
     id("org.jetbrains.intellij") version "1.4.0"
     id("org.jetbrains.kotlin.jvm") version "1.6.0"
+    id("maven-publish")
 }
 
 intellij {
@@ -28,4 +29,17 @@ group = "io.github.hadix"
 
 repositories {
     mavenCentral()
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            setUrl("https://maven.pkg.github.com/Miemiemiemieqiang/ideavim_extension")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }

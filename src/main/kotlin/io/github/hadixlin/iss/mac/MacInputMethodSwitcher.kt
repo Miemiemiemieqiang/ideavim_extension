@@ -53,8 +53,9 @@ class MacInputMethodSwitcher(
     companion object {
         private const val KEY_LAYOUT_US = "com.apple.keylayout.US"
         private const val KEY_LAYOUT_ABC = "com.apple.keylayout.ABC"
+        private const val KEY_LAYOUT_COLEMAK = "com.apple.keylayout.Colemak"
         private const val KEY_LAYOUT_UNICODEHEX = "com.apple.keylayout.UnicodeHexInput"
-        private val ENGLISH_INPUT_SOURCE_CANDIDATE = arrayOf(KEY_LAYOUT_UNICODEHEX, KEY_LAYOUT_ABC, KEY_LAYOUT_US)
+        private val ENGLISH_INPUT_SOURCE_CANDIDATE = arrayOf(KEY_LAYOUT_UNICODEHEX, KEY_LAYOUT_ABC, KEY_LAYOUT_US, KEY_LAYOUT_COLEMAK)
         private var ENGLISH_INPUT_SOURCE: String = ""
     }
 }

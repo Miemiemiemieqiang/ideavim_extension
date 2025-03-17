@@ -1,50 +1,29 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("java")
-    id("org.jetbrains.intellij") version "1.4.0"
-    id("org.jetbrains.kotlin.jvm") version "1.6.0"
-    id("maven-publish")
+	kotlin("jvm") version "1.8.10"
+	id("org.jetbrains.intellij") version "1.17.2"
 }
 
 intellij {
-    pluginName.set("IdeaVimExtension")
-    version.set("IC-2021.3")
-    plugins.add("IdeaVIM:1.10.0")
-    updateSinceUntilBuild.set(false)
-    downloadSources.set(true)
+	pluginName.set("IdeaVimExtension")
+	version.set("2023.1.2")
+	plugins.add("IdeaVIM:2.7.0")
+	updateSinceUntilBuild.set(false)
+	downloadSources.set(true)
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.apiVersion = "1.5"
-    kotlinOptions.languageVersion = "1.5"
-    kotlinOptions.jvmTarget = "1.8"
+	kotlinOptions.jvmTarget = "17"
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+	implementation(kotlin("stdlib"))
 }
 
 group = "io.github.miemieqiang"
+version = "1.7.4"
 
 repositories {
-    mavenCentral()
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Miemiemiemieqiang/ideavim_extension")
-            credentials {
-                username = System.getenv("USERNAME")
-                password = System.getenv("TOKEN")
-            }
-        }
-    }
-    publications {
-        register<MavenPublication>("gpr") {
-            from(components["java"])
-        }
-    }
+	mavenCentral()
 }

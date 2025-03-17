@@ -10,13 +10,9 @@ import com.intellij.openapi.editor.ex.FocusChangeListener
 import com.intellij.util.messages.MessageBusConnection
 import com.maddyhome.idea.vim.VimPlugin
 import com.maddyhome.idea.vim.command.CommandState
-import com.maddyhome.idea.vim.command.MappingMode
-import com.maddyhome.idea.vim.extension.VimExtensionFacade
-import com.maddyhome.idea.vim.helper.StringHelper
-import com.maddyhome.idea.vim.key.MappingOwner
 import com.maddyhome.idea.vim.listener.VimInsertListener
-import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang3.CharUtils
+import org.apache.commons.lang3.StringUtils
 import java.lang.Long.MAX_VALUE
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
@@ -26,7 +22,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 object InputMethodAutoSwitcher {
-    private const val VIM_INSERT_EXIT_MODE_ACTION = "VimInsertExitModeAction"
+    private val VIM_INSERT_EXIT_MODE_ACTION = arrayOf("Escape", "Esc", "VimInsertExitModeAction")
 
     private val EDITING_MODES = EnumSet.of(
         CommandState.Mode.INSERT,
@@ -35,6 +31,16 @@ object InputMethodAutoSwitcher {
 
     @Volatile
     var restoreInInsert: Boolean = false
+        set(value) {
+            field = value
+            if (value) {
+                registerVimInsertListener()
+            } else {
+                unregisterVimInsertListener()
+            }
+        }
+
+    var contextAware: Boolean = false
 
     @Volatile
     var enabled: Boolean = false
@@ -52,28 +58,30 @@ object InputMethodAutoSwitcher {
             if (StringUtils.isBlank(commandName)) {
                 return
             }
-            if (commandName == VIM_INSERT_EXIT_MODE_ACTION) {
+            if (commandName in VIM_INSERT_EXIT_MODE_ACTION) {
                 executor?.execute { switcher.storeCurrentThenSwitchToEnglish() }
                 return
             }
         }
     }
+
     private val insertListener = object : VimInsertListener {
         override fun insertModeStarted(editor: Editor) {
             if (!editor.isInsertMode) {
                 return
             }
-            if (editor.document.charsSequence.isEmpty()) {
-                executor?.execute { switcher.restore() }
-                return
-            }
-            val pos = editor.caretModel.primaryCaret.offset
-            val chars = editor.document.charsSequence.subSequence(
-                max(pos - 1, 0),
-                min(pos + 1, editor.document.textLength - 1)
-            )
-            if (chars.all { CharUtils.isAscii(it) }) {
-                return
+            if (contextAware) {
+                if (editor.document.charsSequence.isEmpty()) {
+                    return
+                }
+                val pos = editor.caretModel.primaryCaret.offset
+                val chars = editor.document.charsSequence.subSequence(
+                    max(pos - 1, 0),
+                    min(pos + 1, editor.document.textLength - 1)
+                )
+                if (chars.any { CharUtils.isAsciiPrintable(it) }) {
+                    return
+                }
             }
             executor?.execute { switcher.restore() }
         }
@@ -103,13 +111,6 @@ object InputMethodAutoSwitcher {
         if (restoreInInsert) {
             registerVimInsertListener()
         }
-        VimExtensionFacade.putKeyMapping(
-            MappingMode.N,
-            StringHelper.parseKeys("<Esc>"),
-            MappingOwner.Plugin.get("IdeaVimExtension"),
-            StringHelper.parseKeys("a<Esc><Esc>"),
-            false
-        )
     }
 
     private fun registerExitInsertModeListener() {
@@ -137,10 +138,11 @@ object InputMethodAutoSwitcher {
 
     private val focusListener = object : FocusChangeListener {
 
-        override fun focusLost(editor: Editor) {}
+        override fun focusLost(editor: Editor) {
+        }
 
         override fun focusGained(editor: Editor) {
-            if (!enabled) {
+            if (!enabled || !VimPlugin.isEnabled()) {
                 return
             }
             val state = CommandState.getInstance(editor)
